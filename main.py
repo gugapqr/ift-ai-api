@@ -69,3 +69,4 @@ Diga:
 @app.get("/")
 async def root():
     return {"status": "IFT API ONLINE"}
+    
