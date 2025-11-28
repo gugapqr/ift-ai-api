@@ -8,9 +8,7 @@ import os
 # ========== VARIÁVEL DE AMBIENTE DA OPENAI ===========
 # =====================================================
 
-OPENAI_KEY = os.getenv("IFT_OPENAI_KEY")    # pega a chave da OpenAI se existir
-
-
+OPENAI_KEY = os.getenv("IFT_OPENAI_KEY")
 # =====================================================
 # =============== CONFIGURAÇÃO DA API =================
 # =====================================================
