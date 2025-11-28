@@ -5,10 +5,16 @@ from datetime import datetime
 import os
 
 # =====================================================
-# ========== VARIÁVEL DE AMBIENTE DA OPENAI ===========
+# ===== CHAVE DA OPENAI VIA VARIÁVEL DE AMBIENTE =====
 # =====================================================
-
+# Railway → Variables → IFT_OPENAI_KEY
 OPENAI_KEY = os.getenv("IFT_OPENAI_KEY")
+
+if not OPENAI_KEY:
+    print("⚠️ AVISO: Variável de ambiente IFT_OPENAI_KEY não encontrada!")
+else:
+    print("🔑 Chave OpenAI carregada com sucesso.")
+
 # =====================================================
 # =============== CONFIGURAÇÃO DA API =================
 # =====================================================
@@ -18,7 +24,6 @@ app = FastAPI(
     description="API oficial do Sistema Inteligente Institucional – IFT Maverick",
     version="1.0"
 )
-
 
 # =====================================================
 # === MODELO DE UNIVERSOS DE ATIVOS ====================
@@ -34,25 +39,28 @@ UNIVERSE_FULL = {
         "CADJPY","CADCHF",
         "CHFJPY"
     ],
+
     "indices": [
         "US100","US500","US30","DE40","FR40","UK100","JP225","HK50","BRAS50"
     ],
+
     "crypto": [
         "BTCUSDT","ETHUSDT","SOLUSDT","XRPUSDT","ADAUSDT","BNBUSDT","AVAXUSDT",
         "DOGEUSDT","LINKUSDT","MATICUSDT","OPUSDT","ARBUSDT","TONUSDT"
     ],
+
     "stocks_usa": [
         "AAPL","MSFT","NVDA","META","GOOGL","AMZN","TSLA","AMD","NFLX","INTC",
         "JPM","BA","KO","PEP","SPY","QQQ"
     ],
+
     "stocks_brasil": [
         "PETR4","PETR3","VALE3","ITUB4","BBDC4","B3SA3","ABEV3","BBAS3","MGLU3",
         "LREN3","WEGE3","PRIO3","GGBR4","CSNA3","JBSS3","SUZB3"
     ]
 }
 
-CUSTOM_WATCHLIST = []   # adicionados pelo usuário via /v1/custom_add
-
+CUSTOM_WATCHLIST = []  # adicionados via /v1/custom_add
 
 
 # =====================================================
@@ -80,7 +88,6 @@ class ScanRequest(BaseModel):
     filters: Optional[ScanFilters] = None
 
 
-
 class AnalyzeRequest(BaseModel):
     mode: str = "analyze"
     symbol: str
@@ -91,7 +98,6 @@ class AnalyzeRequest(BaseModel):
     include_text_summary: bool = True
 
 
-
 class FeedbackRequest(BaseModel):
     signal_id: str
     symbol: str
@@ -100,16 +106,11 @@ class FeedbackRequest(BaseModel):
     result: str
 
 
-
 # =====================================================
-# === PLACEHOLDERS PARA O MOTOR DE ANÁLISE ============
+# ============= PLACEHOLDERS DO MOTOR IFT =============
 # =====================================================
 
 def run_full_market_scan(config: ScanRequest) -> List[Dict[str, Any]]:
-    """
-    Essa função será substituída pelo motor final.
-    Aqui estamos só simulando um retorno (mock)
-    """
     return [{
         "symbol": "US100",
         "unified_score": 0.81,
@@ -128,11 +129,7 @@ def run_full_market_scan(config: ScanRequest) -> List[Dict[str, Any]]:
     }]
 
 
-
 def run_single_analysis(config: AnalyzeRequest) -> Dict[str, Any]:
-    """
-    Placeholder até colocarmos o motor real.
-    """
     return {
         "symbol": config.symbol,
         "summary": "Ativo com tendência de alta em H1 e H4...",
@@ -141,51 +138,33 @@ def run_single_analysis(config: AnalyzeRequest) -> Dict[str, Any]:
     }
 
 
-
 def register_feedback(feedback: FeedbackRequest) -> Dict[str, Any]:
-    """
-    Esse módulo depois alimenta o 'Maverick Score'.
-    """
-    return {
-        "ok": True,
-        "message": "Feedback registrado com sucesso"
-    }
-
+    return {"ok": True, "message": "Feedback registrado com sucesso"}
 
 
 # =====================================================
-# ==================== ENDPOINTS =======================
+# ===================== ENDPOINTS =====================
 # =====================================================
 
 @app.post("/v1/scan")
 async def scan_market(request: ScanRequest):
     results = run_full_market_scan(request)
-    return {
-        "timestamp_utc": datetime.utcnow().isoformat(),
-        "results": results
-    }
-
+    return {"timestamp_utc": datetime.utcnow().isoformat(), "results": results}
 
 
 @app.post("/v1/analyze")
 async def analyze_symbol(request: AnalyzeRequest):
     result = run_single_analysis(request)
-    return {
-        "timestamp_utc": datetime.utcnow().isoformat(),
-        "analysis": result
-    }
-
+    return {"timestamp_utc": datetime.utcnow().isoformat(), "analysis": result}
 
 
 @app.post("/v1/feedback")
 async def feedback(request: FeedbackRequest):
-    result = register_feedback(request)
-    return result
-
+    return register_feedback(request)
 
 
 # =====================================================
-# === GERENCIAR WATCHLIST PERSONALIZADA ===============
+# ========== WATCHLIST PERSONALIZADA ==================
 # =====================================================
 
 class AddSymbolRequest(BaseModel):
