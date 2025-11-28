@@ -4,10 +4,6 @@ from typing import Optional
 from openai import OpenAI
 import os
 
-api_key = os.environ.get("OPENAI_API_KEY")
-
-client = OpenAI(api_key=api_key)
-
 app = FastAPI(title="IFT – Institutional Flow API")
 
 class IFTSignal(BaseModel):
@@ -22,8 +18,16 @@ class IFTSignal(BaseModel):
     message: Optional[str] = None
     extra: Optional[dict] = None
 
+def get_client():
+    api_key = os.environ.get("OPENAI_API_KEY")
+    if not api_key:
+        raise ValueError("OPENAI_API_KEY não foi configurada no Railway.")
+    return OpenAI(api_key=api_key)
+
 @app.post("/ift/signal")
 async def receive_ift_signal(signal: IFTSignal):
+
+    client = get_client()
 
     prompt = f"""
 Você é o IFT-AI, um analista institucional avançado integrado ao indicador IFT Maverick.
@@ -64,9 +68,10 @@ Diga:
         ]
     )
 
-    ai_text = response.choices[0].message.content
-
-    return {"ok": True, "analysis": ai_text}
+    return {
+        "ok": True, 
+        "analysis": response.choices[0].message.content
+    }
 
 @app.get("/")
 async def root():
