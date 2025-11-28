@@ -2,12 +2,25 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
 from datetime import datetime
+import os
+
+# =====================================================
+# ========== VARIÁVEL DE AMBIENTE DA OPENAI ===========
+# =====================================================
+
+OPENAI_KEY = os.getenv("IFT_OPENAI_KEY")    # pega a chave da OpenAI se existir
+
+
+# =====================================================
+# =============== CONFIGURAÇÃO DA API =================
+# =====================================================
 
 app = FastAPI(
     title="IFT Institutional Trading AI",
     description="API oficial do Sistema Inteligente Institucional – IFT Maverick",
     version="1.0"
 )
+
 
 # =====================================================
 # === MODELO DE UNIVERSOS DE ATIVOS ====================
@@ -40,7 +53,8 @@ UNIVERSE_FULL = {
     ]
 }
 
-CUSTOM_WATCHLIST = []   # você pode adicionar via /v1/custom_add
+CUSTOM_WATCHLIST = []   # adicionados pelo usuário via /v1/custom_add
+
 
 
 # =====================================================
@@ -68,6 +82,7 @@ class ScanRequest(BaseModel):
     filters: Optional[ScanFilters] = None
 
 
+
 class AnalyzeRequest(BaseModel):
     mode: str = "analyze"
     symbol: str
@@ -78,6 +93,7 @@ class AnalyzeRequest(BaseModel):
     include_text_summary: bool = True
 
 
+
 class FeedbackRequest(BaseModel):
     signal_id: str
     symbol: str
@@ -86,17 +102,10 @@ class FeedbackRequest(BaseModel):
     result: str
 
 
+
 # =====================================================
 # === PLACEHOLDERS PARA O MOTOR DE ANÁLISE ============
 # =====================================================
-# Aqui você vai conectar depois:
-# - código do IFT Maverick em Python
-# - motores: EMA/HMA/ZZ/Supertrend
-# - PVPC, Volume, ATR, Bollinger
-# - Fibo MTF
-# - Didi Index
-# - Volumized Order Blocks
-# - VPD-LEA, IFA, etc.
 
 def run_full_market_scan(config: ScanRequest) -> List[Dict[str, Any]]:
     """
@@ -121,6 +130,7 @@ def run_full_market_scan(config: ScanRequest) -> List[Dict[str, Any]]:
     }]
 
 
+
 def run_single_analysis(config: AnalyzeRequest) -> Dict[str, Any]:
     """
     Placeholder até colocarmos o motor real.
@@ -133,6 +143,7 @@ def run_single_analysis(config: AnalyzeRequest) -> Dict[str, Any]:
     }
 
 
+
 def register_feedback(feedback: FeedbackRequest) -> Dict[str, Any]:
     """
     Esse módulo depois alimenta o 'Maverick Score'.
@@ -143,8 +154,9 @@ def register_feedback(feedback: FeedbackRequest) -> Dict[str, Any]:
     }
 
 
+
 # =====================================================
-# ================= ENDPOINTS ==========================
+# ==================== ENDPOINTS =======================
 # =====================================================
 
 @app.post("/v1/scan")
@@ -156,6 +168,7 @@ async def scan_market(request: ScanRequest):
     }
 
 
+
 @app.post("/v1/analyze")
 async def analyze_symbol(request: AnalyzeRequest):
     result = run_single_analysis(request)
@@ -165,10 +178,12 @@ async def analyze_symbol(request: AnalyzeRequest):
     }
 
 
+
 @app.post("/v1/feedback")
 async def feedback(request: FeedbackRequest):
     result = register_feedback(request)
     return result
+
 
 
 # =====================================================
@@ -178,8 +193,8 @@ async def feedback(request: FeedbackRequest):
 class AddSymbolRequest(BaseModel):
     symbol: str
 
+
 @app.post("/v1/custom_add")
 async def add_custom_symbol(request: AddSymbolRequest):
     CUSTOM_WATCHLIST.append(request.symbol.upper())
     return {"ok": True, "custom_watchlist": CUSTOM_WATCHLIST}
-
