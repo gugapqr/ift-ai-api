@@ -4,7 +4,9 @@ from typing import Optional
 from openai import OpenAI
 import os
 
-client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+api_key = os.environ.get("OPENAI_API_KEY")
+
+client = OpenAI(api_key=api_key)
 
 app = FastAPI(title="IFT – Institutional Flow API")
 
@@ -69,4 +71,3 @@ Diga:
 @app.get("/")
 async def root():
     return {"status": "IFT API ONLINE"}
-    
