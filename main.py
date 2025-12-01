@@ -17,6 +17,7 @@ MASSIVE_API_KEY = os.getenv("MASSIVE_API_KEY")
 if MASSIVE_API_KEY is None:
     raise ValueError("ERRO: MASSIVE_API_KEY não encontrada no Railway!")
 
+# cliente do polygon/massive
 polygon_client = RESTClient(MASSIVE_API_KEY)
 
 # =====================================================
@@ -88,13 +89,10 @@ class FeedbackRequest(BaseModel):
     result: str
 
 # =====================================================
-# === PARTE 1 — PEGAR DADOS DO POLYGON ================
+# === PEGAR DADOS DO POLYGON/MASSIVE ==================
 # =====================================================
 
 def fetch_candles(symbol: str, timeframe: str) -> List[Dict[str, Any]]:
-    """
-    Baixa candles do Polygon/Massive
-    """
     tf_map = {
         "1": "minute",
         "5": "minute",
@@ -118,7 +116,7 @@ def fetch_candles(symbol: str, timeframe: str) -> List[Dict[str, Any]]:
         ticker=symbol,
         multiplier=multiplier,
         timespan=tf_map[timeframe],
-        from_="2023-01-01",
+        from_="2024-01-01",
         to="2025-12-31",
         limit=500
     )
@@ -129,7 +127,7 @@ def fetch_candles(symbol: str, timeframe: str) -> List[Dict[str, Any]]:
 # === PLACEHOLDER DO IFT MAVERICK ======================
 # =====================================================
 
-def run_full_market_scan(config: ScanRequest) -> List[Dict[str, Any]]:
+def run_full_market_scan(config: ScanRequest):
     return [{
         "symbol": "I:NDX",
         "unified_score": 0.81,
@@ -142,21 +140,19 @@ def run_full_market_scan(config: ScanRequest) -> List[Dict[str, Any]]:
         "reason": [
             "Fluxo institucional limpo",
             "EMA alinhadas",
-            "Supertrend comprador",
-            "IFT Maverick long"
+            "Supertrend comprador"
         ]
     }]
 
-def run_single_analysis(config: AnalyzeRequest) -> Dict[str, Any]:
-    # vai usar fetch_candles()
-    data = fetch_candles(config.symbol, config.timeframes[0])
+def run_single_analysis(config: AnalyzeRequest):
+    candles = fetch_candles(config.symbol, config.timeframes[0])
 
     return {
         "symbol": config.symbol,
         "summary": f"{config.symbol} analisado com sucesso!",
+        "bars_loaded": len(candles),
         "unified_score": 0.65,
-        "last_signal": "long",
-        "bars_loaded": len(data)
+        "last_signal": "long"
     }
 
 def register_feedback(feedback: FeedbackRequest):
