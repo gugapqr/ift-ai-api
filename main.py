@@ -5,18 +5,17 @@ from datetime import datetime
 import os
 
 # =====================================================
-# ===== CHAVE DA OPENAI VIA VARIÁVEL DE AMBIENTE =====
+# ========== VARIÁVEL DE AMBIENTE DA OPENAI ===========
 # =====================================================
-# Railway → Variables → IFT_OPENAI_KEY
+
 OPENAI_KEY = os.getenv("IFT_OPENAI_KEY")
 
-if not OPENAI_KEY:
-    print("⚠️ AVISO: Variável de ambiente IFT_OPENAI_KEY não encontrada!")
-else:
-    print("🔑 Chave OpenAI carregada com sucesso.")
+# Apenas aviso se NÃO existir
+if OPENAI_KEY is None:
+    print("⚠️ AVISO: Variável IFT_OPENAI_KEY não encontrada no ambiente!")
 
 # =====================================================
-# =============== CONFIGURAÇÃO DA API =================
+# ================== CONFIG DA API ====================
 # =====================================================
 
 app = FastAPI(
@@ -39,32 +38,28 @@ UNIVERSE_FULL = {
         "CADJPY","CADCHF",
         "CHFJPY"
     ],
-
     "indices": [
         "US100","US500","US30","DE40","FR40","UK100","JP225","HK50","BRAS50"
     ],
-
     "crypto": [
         "BTCUSDT","ETHUSDT","SOLUSDT","XRPUSDT","ADAUSDT","BNBUSDT","AVAXUSDT",
         "DOGEUSDT","LINKUSDT","MATICUSDT","OPUSDT","ARBUSDT","TONUSDT"
     ],
-
     "stocks_usa": [
         "AAPL","MSFT","NVDA","META","GOOGL","AMZN","TSLA","AMD","NFLX","INTC",
         "JPM","BA","KO","PEP","SPY","QQQ"
     ],
-
     "stocks_brasil": [
         "PETR4","PETR3","VALE3","ITUB4","BBDC4","B3SA3","ABEV3","BBAS3","MGLU3",
         "LREN3","WEGE3","PRIO3","GGBR4","CSNA3","JBSS3","SUZB3"
     ]
 }
 
-CUSTOM_WATCHLIST = []  # adicionados via /v1/custom_add
+CUSTOM_WATCHLIST = []
 
 
 # =====================================================
-# === MODELOS JSON (CONTRATO OFICIAL DA API) ==========
+# === MODELOS JSON — CONTRATO OFICIAL =================
 # =====================================================
 
 class ScanFilters(BaseModel):
@@ -107,7 +102,7 @@ class FeedbackRequest(BaseModel):
 
 
 # =====================================================
-# ============= PLACEHOLDERS DO MOTOR IFT =============
+# === PLACEHOLDERS DO MOTOR IFT (a implementar) =======
 # =====================================================
 
 def run_full_market_scan(config: ScanRequest) -> List[Dict[str, Any]]:
@@ -139,23 +134,30 @@ def run_single_analysis(config: AnalyzeRequest) -> Dict[str, Any]:
 
 
 def register_feedback(feedback: FeedbackRequest) -> Dict[str, Any]:
-    return {"ok": True, "message": "Feedback registrado com sucesso"}
+    return {
+        "ok": True,
+        "message": "Feedback registrado com sucesso"
+    }
 
 
 # =====================================================
-# ===================== ENDPOINTS =====================
+# ================= ENDPOINTS =========================
 # =====================================================
 
 @app.post("/v1/scan")
 async def scan_market(request: ScanRequest):
-    results = run_full_market_scan(request)
-    return {"timestamp_utc": datetime.utcnow().isoformat(), "results": results}
+    return {
+        "timestamp_utc": datetime.utcnow().isoformat(),
+        "results": run_full_market_scan(request)
+    }
 
 
 @app.post("/v1/analyze")
 async def analyze_symbol(request: AnalyzeRequest):
-    result = run_single_analysis(request)
-    return {"timestamp_utc": datetime.utcnow().isoformat(), "analysis": result}
+    return {
+        "timestamp_utc": datetime.utcnow().isoformat(),
+        "analysis": run_single_analysis(request)
+    }
 
 
 @app.post("/v1/feedback")
@@ -164,12 +166,11 @@ async def feedback(request: FeedbackRequest):
 
 
 # =====================================================
-# ========== WATCHLIST PERSONALIZADA ==================
+# === WATCHLIST PERSONALIZADA =========================
 # =====================================================
 
 class AddSymbolRequest(BaseModel):
     symbol: str
-
 
 @app.post("/v1/custom_add")
 async def add_custom_symbol(request: AddSymbolRequest):
